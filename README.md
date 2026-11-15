@@ -14,6 +14,7 @@ NASA Space Apps Challenge is an annual hackathon event (or an innovation incubat
 
 ## Short Project Summary
 
+This project asks 
 
 ## Detailned Project Summary
 
