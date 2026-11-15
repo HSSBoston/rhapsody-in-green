@@ -1,0 +1,233 @@
+import pathlib, sys
+PRJ_DIR = pathlib.Path(__file__).resolve().parents[1]  # 2 levels up
+sys.path.append(str(PRJ_DIR))
+
+import csv, numpy as np
+from music21.pitch import Pitch
+from constants import SONIF_DIR, IMAGE_DATES, CHORDS
+
+# Chord progressions for the four dates.
+# Pareto-optimal
+progression20240501 = ("I", "I", "IV", "I",  "V", "I",  "IV", "VI", "IV", "V", "I")
+progression20240801 = ("I", "I", "IV", "I",  "V", "VI", "IV", "VI", "II", "V", "I")
+progression20241101 = ("I", "I", "VI", "II", "V", "I",  "VI", "IV", "II", "V", "I")
+progression20250201 = ("I", "I", "VI", "II", "V", "I",  "IV", "VI", "IV", "V", "I")
+
+# weighted-sum-optimal
+# progression20240501 = ("I", "I", "IV", "I", "V", "I", "VI", "IV", "II", "V", "I")
+# progression20240801 = ("I", "I", "IV", "I", "V", "I", "VI", "IV", "II", "V", "I")
+# progression20241101 = ("I", "I", "I", "I", "V", "I", "VI", "IV", "II", "V", "I")
+# progression20250201 = ("I", "I", "IV", "I", "V", "I", "VI", "IV", "II", "V", "I")
+
+
+chordProgressions = {
+    "20240501": progression20240501,
+    "20240801": progression20240801,
+    "20241101": progression20241101,
+    "20250201": progression20250201 }
+
+wRegister = 1.0
+wContour  = 0.5
+wMovement = 0.5
+
+minPitch   = Pitch("C3").midi
+maxPitch   = Pitch("B5").midi
+
+def pitchName(midi):
+    pitch = Pitch()
+    pitch.midi = midi
+    return pitch.nameWithOctave
+
+# Load the previously generated melody rhythm.
+#
+def loadMelodyEvents(imageDate):
+    inputCsv = f"{imageDate}-north-melody-rhythm.csv"
+
+    with open(SONIF_DIR / inputCsv, newline="") as file:
+        rows = list(csv.DictReader(file))
+
+    melodyEvents = []
+    for index, row in enumerate(rows):
+        event = {
+            "eventIndex":      int(  row["eventIndex"]),
+            "chordEventIndex": int(  row["chordEventIndex"]),
+            "startBeat":       float(row["startBeat"]),
+            "durationBeats":   float(row["durationBeats"]),
+            "landFraction":    float(row["landFraction"]),
+            "landGreenness":   float(row["landGreenness"]) }
+
+        assert event["eventIndex"] == index + 1
+        melodyEvents.append(event)
+
+    assert melodyEvents
+    assert melodyEvents[0]["startBeat"] == 0.0
+
+    totalBeats = sum(event["durationBeats"] for event in melodyEvents)
+    assert abs(totalBeats - 16.0) < 1e-9
+
+    return melodyEvents
+
+
+# Generate all chord-tone candidate pitches between C3 and B5.
+#
+def generateCandidatePitches(chordState):
+    chordPitchClasses = { pitch.pitchClass for pitch in CHORDS[chordState].pitches }
+
+    candidatePitches = []
+    for midi in range(minPitch, maxPitch + 1):
+        if midi % 12 in chordPitchClasses:
+            candidatePitches.append(midi)
+    return candidatePitches
+
+# Calculate E_register
+# 
+def calculateRegisterError(candidatePitch, landGreenness):
+    greennessAnchors = [0.0, 0.35, 0.55, 1.0]
+    pitchAnchors     = [48,  60,   72,   83]
+    preferredPitch = np.interp(landGreenness, greennessAnchors, pitchAnchors)
+    return ((candidatePitch - preferredPitch) / 12.0) ** 2
+
+# Calculate E_contour
+#
+def calculateContourError(candidatePitch, previousPitch, landGreenness, previousGreenness):
+    greennessChange = landGreenness - previousGreenness
+    pitchChange     = candidatePitch - previousPitch
+
+    greennessTolerance = 0.03
+    fullStrengthChange = 0.20
+
+    contourStrength = min(
+        max( (abs(greennessChange) - greennessTolerance) / (fullStrengthChange - greennessTolerance),
+             0.0),
+        1.0)
+    if contourStrength == 0:
+        return 0.0
+
+    # Determine greenness and melodic directions.
+    greennessDirection = 1 if greennessChange > 0 else -1
+    
+    if pitchChange > 0:   pitchDirection = 1
+    elif pitchChange < 0: pitchDirection = -1
+    else:                 pitchDirection = 0
+
+    directionError = (1.0 - greennessDirection * pitchDirection) / 2.0
+    return contourStrength * directionError
+
+# Calculate E_movement
+#
+def calculateMovementError(candidatePitch, previousPitch):
+    return ((candidatePitch - previousPitch) / 12.0) ** 2
+
+# Calculate E_cadence
+#
+def calculateCadenceError(candidatePitch, lastPitch):
+    return calculateMovementError(lastPitch, candidatePitch)
+
+def selectTonicPitch(landGreenness):
+    tonicCandidates = [Pitch("C4").midi, Pitch("C5").midi]
+    return min( tonicCandidates, key=lambda p: calculateRegisterError(p, landGreenness) )
+
+# Calculate the pitch-selection objective.
+#
+def calculatePitchError(candidatePitch, melodyEvent, previousPitch, previousEvent,
+                        isPenultimate, lastPitch):
+    eRegister = calculateRegisterError( candidatePitch, melodyEvent["landGreenness"] )
+    
+    eContour = calculateContourError( candidatePitch, previousPitch,
+                                      melodyEvent["landGreenness"], previousEvent["landGreenness"])
+    
+    eMovement = calculateMovementError(candidatePitch, previousPitch)
+    
+    # For the penultimate note, also penalize movement to the selected final tonic.
+    if isPenultimate: eMovement += calculateCadenceError(candidatePitch, lastPitch)
+    
+    return wRegister * eRegister + wContour * eContour + wMovement * eMovement
+
+# Evaluate every candidate and retain the lowest-error pitch.
+#
+def optimizePitch(candidatePitches, melodyEvent,previousPitch, previousEvent,
+                  isPenultimate, lastPitch):
+    bestPitch = None
+    bestError = float("inf")
+
+    for candidatePitch in candidatePitches:
+        ePitch = calculatePitchError( candidatePitch, melodyEvent, previousPitch, previousEvent,
+                                      isPenultimate, lastPitch)
+        if ePitch < bestError:
+            bestError = ePitch
+            bestPitch = candidatePitch
+    return bestPitch, bestError
+
+# Generate the melody pitches for one date.
+#
+def generateMelodyPitches(melodyEvents, chordProgression):
+    selectedPitches = []
+    numEvents = len(melodyEvents)
+    
+    # Select tonic pitches for the first and last melody notes.
+    firstPitch = selectTonicPitch(melodyEvents[0]["landGreenness"])
+    lastPitch  = selectTonicPitch(melodyEvents[-1]["landGreenness"])    
+
+    for index, event in enumerate(melodyEvents):
+        isPenultimate = (index == numEvents - 2)
+        chordIndex = event["chordEventIndex"] - 1
+
+        if not (0 <= chordIndex < len(chordProgression)):
+            raise ValueError("Invalid chordEventIndex.")
+
+        chordState = chordProgression[chordIndex]
+        candidatePitches = generateCandidatePitches(chordState)
+
+        # Enforce fixed first and last notes.
+        if index == 0:
+            assert firstPitch in candidatePitches
+            candidatePitches = [firstPitch]
+        elif index == numEvents - 1:
+            assert lastPitch in candidatePitches
+            candidatePitches = [lastPitch]
+
+        # Select a pitch.
+        if index == 0:
+            bestPitch = firstPitch
+            bestError = None
+        elif index == numEvents - 1:
+            bestPitch = lastPitch
+            bestError = None
+        else:
+            previousPitch = selectedPitches[-1]
+            previousEvent = melodyEvents[index - 1]
+
+            bestPitch, bestError = optimizePitch(candidatePitches, event, previousPitch,
+                                                 previousEvent, isPenultimate, lastPitch)
+
+        selectedPitches.append(bestPitch)
+
+        print(
+            f"  event={event['eventIndex']:>2} "
+            f"chord={chordState:>3} "
+            f"start={event['startBeat']:>4.1f} "
+            f"duration={event['durationBeats']:>3.1f} "
+            f"greenness={event['landGreenness']:.3f}" )
+        
+        print("    Candidates:", [pitchName(p) for p in candidatePitches] )
+
+        if bestError is None:
+            print("    Selected:", pitchName(bestPitch), "(fixed)")
+        else:
+            print(f"    Selected: {pitchName(bestPitch)}, E_pitch={bestError:.4f}")
+            
+    return selectedPitches
+
+
+# Generate melodies for all four dates.
+#
+for imageDate in IMAGE_DATES:
+    print(f"\nProcessing {imageDate}")
+
+    melodyEvents     = loadMelodyEvents(imageDate)
+    chordProgression = chordProgressions[imageDate]
+    selectedPitches = generateMelodyPitches( melodyEvents, chordProgression )
+
+    print("Total melody events:", len(melodyEvents))
+    print("Selected pitches:", [pitchName(p) if p is not None else None
+                                for p in selectedPitches] )
