@@ -7,7 +7,7 @@ This project ... It was developed at the NASA Space Apps Challenge 2026.
 NASA Space Apps Challenge is an annual hackathon event (or an innovation incubation and civic engagement program) where NASA puts out about 20 challenges for participants around the world to develop innovative solutions.
 
 - [Official project webpage](https://www.spaceappschallenge.org/2026/find-a-team/rhapsody-in-green/?tab=project) at SpaceAppsChallenge.org
-- 7-page project summary
+- [7-page project summary](https://docs.google.com/presentation/d/1LIZ2PGalvjoC4rm9uehtp3AM97YpORLGtKrHORnwVF0/edit?usp=sharing)
     - PDF version: Demo videos do not work in this PDF version.
 - Sonification algorithm
 - Data
