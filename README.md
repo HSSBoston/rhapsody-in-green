@@ -10,7 +10,8 @@ NASA Space Apps Challenge is an annual hackathon event (or an innovation incubat
 - [7-page project summary](https://docs.google.com/presentation/d/1LIZ2PGalvjoC4rm9uehtp3AM97YpORLGtKrHORnwVF0/edit?usp=sharing)
     - [PDF version](./docs/space-apps-7slides.pdf): Audio clips do not work in this PDF version.
 - Sonification algorithm
-- Data
+  - [Code](./code/)
+  - [Data: Near Real-Time Normalized Difference Vegetation Index (NDVI)](https://svs.gsfc.nasa.gov/5544/)
 
 
 ## Project Summary
