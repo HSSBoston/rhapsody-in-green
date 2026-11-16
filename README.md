@@ -12,10 +12,9 @@ NASA Space Apps Challenge is an annual hackathon event (or an innovation incubat
 - Sonification algorithm
 - Data
 
-## Short Project Summary
 
-This project asks 
+## Project Summary
 
-## Detailned Project Summary
+
 
 
