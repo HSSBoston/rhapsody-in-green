@@ -2,7 +2,7 @@
   <img src="./images/logo.jpg" width="650" />
 </p>
 
-This project worked on scientific data sonification that translates NASA's Earthdata into sound and offers a multisensory way to explore Earth science beyond traditional visualizations. It was conducted for [The Earth Information Jukebox Challenge](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/) at the 2026 [NASA Space Apps Challenge](https://www.spaceappschallenge.org/). 
+This project explored scientific data sonification that translates NASA's Earthdata into sound and offers a multisensory way to explore Earth science beyond traditional visualizations. It was conducted for [The Earth Information Jukebox Challenge](https://www.spaceappschallenge.org/2026/challenges/the-earth-information-jukebox/) at the 2026 [NASA Space Apps Challenge](https://www.spaceappschallenge.org/). 
 
 NASA Space Apps Challenge is an annual hackathon event (or an innovation incubation and civic engagement program) where NASA puts out about 20 challenges for participants around the world to develop innovative solutions.
 
