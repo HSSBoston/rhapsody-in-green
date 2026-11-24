@@ -2,10 +2,10 @@
 
 The proposed sonification method was applied to four NASA NDVI images representing different seasons: 
 
-- Spring (May 1, 2024)
-- Summer (August 1, 2024)
-- Fall (November 1, 2024)
-- Winter (February 1, 2025)
+- Spring ([May 1, 2024](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20240501.ndvi_w_snow.oceanblue.png))
+- Summer ([August 1, 2024](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20240801.ndvi_w_snow.oceanblue.png))
+- Fall ([November 1, 2024](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20241101.ndvi_w_snow.oceanblue.png))
+- Winter ([February 1, 2025](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20250201.ndvi_w_snow.oceanblue.png))
 
 Each image was translated into a four-measure musical composition, with harmony, rhythm, and melody shaped by the geographic distribution and geometric patterns of vegetation greenness. 
 
