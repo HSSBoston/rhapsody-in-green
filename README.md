@@ -13,7 +13,7 @@ NASA Space Apps Challenge is an annual hackathon event (or an innovation incubat
   - [Code](./code/)
   - [Data: Near Real-Time Normalized Difference Vegetation Index (NDVI)](https://svs.gsfc.nasa.gov/5544/)
 - Sonified music
-  - [Musical scores](./code/data/scores/)
+  - [Musical scores](./scores.md)
   - [Audio clips](./code/data/audio/)
 
 
