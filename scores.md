@@ -1,6 +1,6 @@
 ## Sonification Examples: A Seasonal Suite in Green 
 
-The proposed sonification method was applied to four NASA NDVI images representing different seasons: 
+The proposed sonification method was applied to four NASA [NDVI](https://svs.gsfc.nasa.gov/5544/) images representing different seasons: 
 
 - Spring ([May 1, 2024](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20240501.ndvi_w_snow.oceanblue.png))
 - Summer ([August 1, 2024](https://svs.gsfc.nasa.gov/vis/a000000/a005500/a005544/frames/8640x4320_2x1_30p/equirectangular/SNPP_VIIRS.20240801.ndvi_w_snow.oceanblue.png))
