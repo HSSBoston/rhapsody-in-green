@@ -9,6 +9,11 @@ The proposed sonification method was applied to four NASA [NDVI](https://svs.gsf
 
 Each image was translated into a four-measure musical composition, with harmony, rhythm, and melody shaped by the geographic distribution and geometric patterns of vegetation greenness. 
 
+- Listen to spring vegetation
+- Listen to summer vegetation
+- Listen to fall vegetation
+- Listen to winter vegetation
+
 <p align="center">
   <img src="./images/sonified-music.jpg" width="650" />
 </p>
